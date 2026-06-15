@@ -54,18 +54,28 @@ def extract_text(cand):
     skills = ", ".join([s.get("name", "") for s in cand.get("skills", [])])
     return f"Title: {title}. Skills: {skills}. Summary: {summary}"[:1000]
 
-st.title("Redrob Intelligent Candidate Discovery")
-st.write("Upload a small `candidates.jsonl` sample to rank them according to our algorithm.")
+st.markdown("""
+<div style="text-align: center; padding-bottom: 2rem;">
+    <h1 style="color: #FF4B4B; font-size: 3rem;">Redrob Intelligent Discovery 🚀</h1>
+    <p style="font-size: 1.2rem; color: #666;">AI-Powered Candidate Ranking & Semantic Matching Engine</p>
+</div>
+""", unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("Upload candidates.jsonl", type=["jsonl"])
+st.markdown("""
+### 🎯 How it works
+This sandbox mimics our offline batch processor. It filters honeypot profiles, computes heuristic scores based on metadata, and executes a semantic embedding search against the **AI/ML Search & Ranking Engineer** job description.
+""")
+
+uploaded_file = st.file_uploader("Upload candidates sample", type=["jsonl", "json"])
 
 if uploaded_file is not None:
     if st.button("Rank Candidates"):
         with st.spinner("Processing candidates..."):
-            candidates = []
-            for line in uploaded_file:
-                if line.strip():
-                    candidates.append(json.loads(line))
+            file_content = uploaded_file.getvalue().decode('utf-8')
+            if uploaded_file.name.endswith('.json'):
+                candidates = json.loads(file_content)
+            else:
+                candidates = [json.loads(line) for line in file_content.splitlines() if line.strip()]
             
             st.write(f"Loaded {len(candidates)} candidates.")
             
@@ -126,8 +136,23 @@ if uploaded_file is not None:
                     })
                     
                 df = pd.DataFrame(output_rows)
-                st.success("Ranking complete!")
-                st.dataframe(df)
+                st.success("Ranking complete! 🎉")
+                st.markdown("### 🏆 Top 3 Candidates")
+                
+                cols = st.columns(3)
+                for c, r in zip(cols, output_rows[:3]):
+                    with c:
+                        st.markdown(f'''
+                        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-top: 5px solid #FF4B4B; margin-bottom: 20px;">
+                            <h4 style="margin-top: 0;">Rank #{r['rank']}</h4>
+                            <p style="color:gray; font-size: 0.8rem; margin-bottom: 5px;">ID: {r['candidate_id']}</p>
+                            <h2 style="color: #FF4B4B; margin: 10px 0;">{r['score']:.2f} <span style="font-size:1rem;color:gray;font-weight:normal;">/ 1.0</span></h2>
+                            <p style="font-size: 0.9rem;">{r['reasoning']}</p>
+                        </div>
+                        ''', unsafe_allow_html=True)
+                
+                st.markdown("### 📋 Full Ranked List")
+                st.dataframe(df, use_container_width=True, hide_index=True)
                 
                 csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
