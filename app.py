@@ -143,6 +143,22 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] * { color: white !important; }
 section[data-testid="stSidebar"] .stSlider > div > div { background: #E63946 !important; }
+section[data-testid="stSidebar"] textarea {
+    background: rgba(255,255,255,0.08) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 8px !important;
+    font-size: 0.82rem !important;
+}
+section[data-testid="stSidebar"] textarea:focus {
+    border-color: #E63946 !important;
+    box-shadow: 0 0 0 2px rgba(230,57,70,0.3) !important;
+}
+section[data-testid="stSidebar"] label { color: rgba(255,255,255,0.7) !important; font-size: 0.8rem !important; }
+section[data-testid="stSidebar"] .stCheckbox label { color: white !important; font-size: 0.9rem !important; }
+section[data-testid="stSidebar"] h2 { font-size: 1.1rem !important; font-weight: 700 !important; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 0.5rem; }
+section[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.1) !important; }
+section[data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.4) !important; font-size: 0.72rem !important; }
 
 /* ── Upload Area ──────────────────────────────────────────────── */
 .upload-wrapper {
