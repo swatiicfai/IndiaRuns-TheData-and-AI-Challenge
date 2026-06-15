@@ -270,7 +270,7 @@ with st.sidebar:
         )
     )
     st.markdown("---")
-    st.caption("India Runs · Data & AI Challenge 2024")
+    st.caption("India Runs · Data & AI Challenge 2026")
 
 
 # ════════════════════════════════════════════════════════════════════════════
