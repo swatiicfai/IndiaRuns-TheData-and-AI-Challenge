@@ -155,7 +155,20 @@ html, body, [class*="css"] {
     border: 1.5px dashed rgba(255,255,255,0.15) !important;
     border-radius: 12px !important; padding: 1rem !important;
 }
-[data-testid="stFileUploader"] * { color: rgba(255,255,255,0.6) !important; }
+[data-testid="stFileUploadDropzone"],
+[data-testid="stFileUploader"] section,
+[data-testid="stFileUploader"] div {
+    background: transparent !important;
+}
+[data-testid="stFileUploader"] * { color: rgba(255,255,255,0.8) !important; }
+
+[data-testid="stTextArea"] textarea,
+[data-testid="stTextInput"] input {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 8px !important;
+}
 .stButton > button[kind="primary"] {
     background: #E63946 !important; color: white !important;
     border: none !important; border-radius: 10px !important;
@@ -491,31 +504,26 @@ if uploaded_file and go:
     results.sort(key=lambda x: x["score"], reverse=True)
 
     # ── STAT CARDS ─────────────────────────────────────────────────────────
-    st.markdown("""<div class="sec-hdr"><h2>Overview</h2><hr></div>""", unsafe_allow_html=True)
-    st.markdown('<div class="stat-grid">', unsafe_allow_html=True)
-    for icon, val, lbl in [
+    stat_items = [
         ("👥", total,          "Candidates Loaded"),
         ("🚫", len(honeypots), "Honeypots Removed"),
         ("✅", len(texts),     "Profiles Ranked"),
         ("🏆", k,              "Top Results Shown"),
-    ]:
-        st.markdown(f"""
-        <div class="stat-card">
-            <div class="s-icon">{icon}</div>
-            <div class="s-val">{val}</div>
-            <div class="s-lbl">{lbl}</div>
-        </div>""", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    ]
+    stat_html = '<div class="sec-hdr"><h2>Overview</h2><hr></div><div class="stat-grid">'
+    for icon, val, lbl in stat_items:
+        stat_html += f'<div class="stat-card"><div class="s-icon">{icon}</div><div class="s-val">{val}</div><div class="s-lbl">{lbl}</div></div>'
+    stat_html += '</div>'
+    st.markdown(stat_html, unsafe_allow_html=True)
 
     # ── PODIUM ─────────────────────────────────────────────────────────────
-    st.markdown("""<div class="sec-hdr"><h2>🏆 Top Candidates</h2><hr></div>""", unsafe_allow_html=True)
-    st.markdown('<div class="podium-wrap">', unsafe_allow_html=True)
     medals = ["🥇", "🥈", "🥉"]
+    pod_html = '<div class="sec-hdr"><h2>🏆 Top Candidates</h2><hr></div><div class="podium-wrap">'
     for r, medal in zip(results[:3], medals):
         bar = int(r["score"] * 100)
         chips = "".join(f'<span class="chip">{s}</span>' for s in r["skills"][:4])
         top_cls = "top1" if medal == "🥇" else ""
-        st.markdown(f"""
+        pod_html += f"""
         <div class="pod {top_cls}">
             <div class="pod-medal">{medal}</div>
             <div class="pod-num">#{results.index(r)+1}</div>
@@ -529,24 +537,24 @@ if uploaded_file and go:
                 <span>Semantic <b>{r['sem']:.3f}</b></span>
                 <span>Heuristic <b>{r['h_score']:.3f}</b></span>
             </div>
-        </div>""", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        </div>"""
+    pod_html += '</div>'
+    st.markdown(pod_html, unsafe_allow_html=True)
 
     # ── CHART ──────────────────────────────────────────────────────────────
-    st.markdown("""<div class="sec-hdr"><h2>📊 Score Distribution</h2><hr></div>""", unsafe_allow_html=True)
-    chart_df = pd.DataFrame([{"Candidate": r["candidate_id"], "Score": r["score"]} for r in results]).head(20)
+    st.markdown('<div class="sec-hdr"><h2>📊 Score Distribution</h2><hr></div>', unsafe_allow_html=True)
+    chart_df = pd.DataFrame([{"Candidate ID": r["candidate_id"], "Score": r["score"]} for r in results]).head(20)
     chart = alt.Chart(chart_df).mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#E63946").encode(
-        x=alt.X("Candidate:N", sort="-y", axis=alt.Axis(labelColor="#555", labelFontSize=10, labelAngle=-40, titleColor="#555")),
-        y=alt.Y("Score:Q", scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(labelColor="#555", titleColor="#555")),
-        opacity=alt.condition(alt.datum.Score > 0.5, alt.value(1.0), alt.value(0.55)),
-        tooltip=["Candidate", "Score"]
-    ).configure(background="transparent").configure_axis(
-        gridColor="rgba(255,255,255,0.05)", domainColor="rgba(255,255,255,0.1)"
-    ).properties(height=250)
-    with st.container():
-        st.markdown('<div style="margin:0 3rem">', unsafe_allow_html=True)
-        st.altair_chart(chart, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        x=alt.X("Candidate ID:N", sort="-y", axis=alt.Axis(labelColor="#aaa", labelFontSize=10, labelAngle=-40, titleColor="#aaa")),
+        y=alt.Y("Score:Q", scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(labelColor="#aaa", gridColor="rgba(255,255,255,0.06)", titleColor="#aaa")),
+        opacity=alt.condition(alt.datum.Score > 0.5, alt.value(1.0), alt.value(0.5)),
+        tooltip=["Candidate ID", "Score"]
+    ).configure(background="transparent").configure_view(
+        strokeWidth=0
+    ).configure_axis(
+        domainColor="rgba(255,255,255,0.1)"
+    ).properties(height=260)
+    st.altair_chart(chart, use_container_width=True)
 
     # ── FULL TABLE ─────────────────────────────────────────────────────────
     st.markdown("""<div class="sec-hdr"><h2>📋 Full Ranked List</h2><hr></div>""", unsafe_allow_html=True)

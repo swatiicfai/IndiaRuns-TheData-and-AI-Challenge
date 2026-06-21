@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.jsonl
+*.faiss
+*.pkl
+submission.csv
