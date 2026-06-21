@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import json
 from sentence_transformers import SentenceTransformer
-import faiss
 import numpy as np
 from datetime import datetime
 import altair as alt
@@ -489,10 +488,11 @@ if uploaded_file and go:
         st.write("🧠  Encoding embeddings + FAISS search…")
         embs  = model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
         q_emb = model.encode([jd_query], normalize_embeddings=True)
-        fidx  = faiss.IndexFlatIP(embs.shape[1])
-        fidx.add(embs)
-        k     = min(len(texts), top_n)
-        D, I  = fidx.search(q_emb, k)
+        scores = np.dot(embs, q_emb[0])
+        k = min(len(texts), top_n)
+        best_idx = np.argsort(scores)[::-1][:k]
+        D = [scores[best_idx]]
+        I = [best_idx]
         status.update(label="✅  Pipeline complete!", state="complete")
 
     # Build results
